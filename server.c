@@ -61,6 +61,7 @@ int main(void) {
         exit(1);
     }
 
+    //fprintf(p->ai_addr, "Address\n");
     if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
       close(sockfd);
       perror("server: bind");
