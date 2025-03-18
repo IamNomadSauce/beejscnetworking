@@ -15,7 +15,7 @@ int main() {
 
     printf("Creating socket...\n");
     SOCKET socket_listen;
-    socket_listen = socket(bind_addres->ai_family, bind_address->ai_socktype, bind_address->ai_protocol);
+    socket_listen = socket(bind_address->ai_family, bind_address->ai_socktype, bind_address->ai_protocol);
     if (!ISVALIDSOCKET(socket_listen)) {
         fprintf(stderr, "socket() failed. (%d)\n", GETSOCKETERRNO());
         return 1;
@@ -65,7 +65,7 @@ int main() {
                     if (socket_client > max_socket) max_socket = socket_client;
                     char address_buffer[100];
                     getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
-                    prtinf("New connection from %s\n", address_buffer);
+                    printf("New connection from %s\n", address_buffer);
                 } else {
                     char read[1024];
                     int bytes_received = recv(i, read, 1024, 0);
@@ -74,13 +74,27 @@ int main() {
                         CLOSESOCKET(i);
                         continue;
                     }
-                    int j;
-                    for (j = 0; j < bytes_received; ++j) 
-                        read[j] = toupper(read[j]);
-                    send(i, read, bytes_received, 0);
+                    // int j;
+                    // for (j = 0; j < bytes_received; ++j) 
+                    //     read[j] = toupper(read[j]);
+                    // send(i, read, bytes_received, 0);
+                    SOCKET j;
+                    for (j = 1; j<= max_socket; ++j) {
+                        if (FD_ISSET(j, &master)) {
+                            if (j == socket_listen || j == i) 
+                                continue;
+                            else   
+                                send(j, read, bytes_received, 0);
+                        }
+                    }
                 }
             } //if FD_ISSET
         } // for i to max_socket
     } //while(1)
 
+    printf("Closing listening socket...\n");
+    CLOSESOCKET(socket_listen);
+
+    printf("Finished.\n");
+    return 0;
 }
